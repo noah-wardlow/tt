@@ -103,6 +103,12 @@ find "$CLIENT_NAME/src" -name "*.ts" -o -name "*.tsx" | while read file; do
   fi
 done
 
+# Update client index.html title
+if [ -f "$CLIENT_NAME/index.html" ]; then
+  sed -i.bak "s/gg-client/$CLIENT_NAME/g" "$CLIENT_NAME/index.html"
+  rm "$CLIENT_NAME/index.html.bak"
+fi
+
 find "$SERVER_NAME/src" -name "*.ts" | while read file; do
   if grep -q "gg-shared" "$file" 2>/dev/null; then
     sed -i.bak "s/gg-shared/$SHARED_NAME/g" "$file"
