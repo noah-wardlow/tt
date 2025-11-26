@@ -32,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: .
-        run: pnpm install --frozen-lockfile --filter tt-client --filter gg-shared --filter tt-server
+        run: pnpm install --frozen-lockfile --filter tt-client --filter tt-shared --filter tt-server
 
       - name: Generate Prisma Client
         working-directory: tt-server
