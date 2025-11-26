@@ -1,0 +1,14 @@
+
+> gg-server@ db:migrate:diff /Users/noahwardlow/gg/gg-server
+> prisma migrate diff --from-empty --to-schema-datamodel ./prisma/schema.prisma --script
+
+-- CreateTable
+CREATE TABLE "User" (
+    "id" TEXT NOT NULL PRIMARY KEY,
+    "email" TEXT NOT NULL,
+    "name" TEXT
+);
+
+-- CreateIndex
+CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
+

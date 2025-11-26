@@ -1,0 +1,16 @@
+{
+	"$schema": "node_modules/wrangler/config-schema.json",
+	"name": "gg-server",
+	"compatibility_date": "2025-08-03",
+	"main": "./src/index.ts",
+	"d1_databases": [
+		{
+			"binding": "DB",
+			"database_name": "gg-database",
+			"database_id": "c43a0966-45f6-432b-888e-d365a7cbd5b1"
+		}
+	],
+	// For local development, create a .dev.vars file with your secrets
+	// For production, use: wrangler secret put VARIABLE_NAME
+	"vars": {}
+}

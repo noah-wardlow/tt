@@ -1,0 +1,48 @@
+name: Deploy gg-client
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - 'gg-client/**'
+      - '.github/workflows/deploy-client.yml'
+      - 'pnpm-lock.yaml'
+
+concurrency:
+  group: gg-client-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gg-client
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - name: Install dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile --filter gg-client --filter gg-shared --filter gg-server
+
+      - name: Generate Prisma Client
+        working-directory: gg-server
+        run: pnpm run db:generate
+
+      - name: Build client (Vite)
+        run: pnpm run build
+
+      - name: Deploy with Wrangler
+        run: pnpm exec wrangler deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

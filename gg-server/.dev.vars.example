@@ -1,0 +1,8 @@
+# Local development environment variables for Wrangler
+# Copy this to .dev.vars and fill in your actual values
+
+GOOGLE_CLIENT_ID=your-google-client-id
+GOOGLE_CLIENT_SECRET=your-google-client-secret
+DISCORD_CLIENT_ID=your-discord-client-id
+DISCORD_CLIENT_SECRET=your-discord-client-secret
+BETTER_AUTH_SECRET=your-random-secret-key-here

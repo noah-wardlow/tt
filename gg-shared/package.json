@@ -1,0 +1,12 @@
+{
+  "name": "gg-shared",
+  "version": "1.0.0",
+  "type": "module",
+  "exports": {
+    "./types": "./src/types.ts",
+    "./oauth-config": "./src/oauth-config.ts"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.16.3"
+  }
+}

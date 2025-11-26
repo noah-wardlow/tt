@@ -1,0 +1,21 @@
+{
+  "name": "gg-client",
+  "compatibility_date": "2025-04-03",
+  // Use Workers Assets for SPA static files (wrangler serves Vite build)
+  "assets": {
+    // REQUIRED: directory with built static assets from Vite
+    "directory": "./dist",
+    // Optional but recommended: bind to ASSETS so worker can fetch assets
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application"
+  },
+  // Custom Worker entry to proxy API calls and serve assets
+  "main": "./src/worker.ts",
+  // Bind gg-server service so client can call backend without CORS
+  "services": [
+    {
+      "binding": "GG_SERVER",
+      "service": "gg-server"
+    }
+  ]
+}

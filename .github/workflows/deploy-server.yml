@@ -1,0 +1,50 @@
+name: Deploy gg-server
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "gg-server/**"
+      - ".github/workflows/deploy-server.yml"
+      - "pnpm-lock.yaml"
+
+concurrency:
+  group: gg-server-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: gg-server
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Enable Corepack (pnpm)
+        run: corepack enable
+
+      - name: Install dependencies
+        working-directory: .
+        run: pnpm install --frozen-lockfile --filter gg-server --filter gg-shared
+
+      - name: Generate Prisma Client
+        run: pnpm run db:generate
+
+      - name: Apply D1 migrations
+        run: pnpm run db:migrate:remote || echo "Migration failed or no migrations to apply"
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+
+      - name: Deploy with Wrangler
+        run: pnpm exec wrangler deploy
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

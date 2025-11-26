@@ -1,0 +1,4 @@
+packages:
+  - gg-server
+  - gg-client
+  - gg-shared
