@@ -353,8 +353,31 @@ CI/CD workflows are pre-configured in `.github/workflows/`:
 - `deploy-client.yml` - Deploys client on push to `main`
 
 **Setup:**
-1. Add `CLOUDFLARE_API_TOKEN` to GitHub Secrets
-2. Add `CLOUDFLARE_ACCOUNT_ID` to GitHub Secrets
+
+1. **Create a Cloudflare API Token:**
+   - Go to https://dash.cloudflare.com/profile/api-tokens
+   - Click **Create Token**
+   - Use **Create Custom Token** with these permissions:
+
+   | Scope | Resource | Permission |
+   |-------|----------|------------|
+   | Account | Workers Scripts | Edit |
+   | Account | D1 | Edit |
+   | Account | Account Settings | Read |
+   | Account | Workers KV Storage | Edit |
+   | Account | Workers R2 Storage | Edit |
+   | Account | Cloudflare Pages | Edit |
+   | Account | Workers Builds Configuration | Edit |
+   | Account | Workers Tail | Read |
+   | All zones | Workers Routes | Edit |
+
+   - Click **Continue to summary** → **Create Token**
+   - Copy the token (you won't see it again)
+
+2. **Add GitHub Secrets** (Settings → Secrets and variables → Actions):
+   - `CLOUDFLARE_API_TOKEN` = the token you just created
+   - `CLOUDFLARE_ACCOUNT_ID` = your account ID (found in Workers dashboard URL or sidebar)
+
 3. Push to `main` branch - auto-deploys!
 
 ### Manual Deploy
