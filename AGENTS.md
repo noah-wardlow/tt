@@ -1,6 +1,6 @@
 ## Project Overview
 
-**GG Template** is a monorepo fullstack template for Cloudflare Workers with:
+**TT Template** is a monorepo fullstack template for Cloudflare Workers with:
 - **tt-server**: Hono API on Cloudflare Workers with Prisma + D1 database
 - **tt-client**: Vite React SPA deployed as a Cloudflare Worker (Assets)
 - **tt-shared**: Shared TypeScript types between client and server

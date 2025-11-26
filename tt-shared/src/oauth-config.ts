@@ -24,11 +24,11 @@ export const oauthConfig: OAuthConfig = {
     name: 'Google',
   },
   discord: {
-    enabled: true,
+    enabled: false,
     name: 'Discord',
   },
   twitch: {
-    enabled: true,
+    enabled: false,
     name: 'Twitch',
   },
 };
