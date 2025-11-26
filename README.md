@@ -1,4 +1,4 @@
-# TT Template
+# GG Template
 
 A production-ready fullstack template for Cloudflare Workers with authentication.
 
@@ -13,26 +13,26 @@ The client proxies `/api/*` to the server via service binding (no CORS in produc
 
 ---
 
-## 🚀 Quick Start (New Project from Template)
+## Quick Start (New Project from Template)
 
 ### 1. Clone and Rename
 
 ```bash
-git clone <your-repo> my-project
+git clone https://github.com/noah-wardlow/starter my-project
 cd my-project
 
 # Automated rename (recommended)
 ./rename-project.sh my-project
 
 # This will rename:
-#   tt-client → my-project-client
-#   tt-server → my-project-server
-#   tt-shared → my-project-shared
+#   gg-client → my-project-client
+#   gg-server → my-project-server
+#   gg-shared → my-project-shared
 # And update all references in configs, imports, and docs
 ```
 
 **Or rename manually:**
-- Rename directories: `tt-client`, `tt-server`, `tt-shared`
+- Rename directories: `gg-client`, `gg-server`, `gg-shared`
 - Update `package.json` workspace names
 - Update `wrangler.jsonc` names and service bindings
 - Update imports in code
@@ -46,45 +46,18 @@ pnpm install
 ### 3. Create D1 Database
 
 ```bash
-# Create production database
 cd my-project-server
 pnpm exec wrangler d1 create my-project-database
 
-# Copy the output and update my-project-server/wrangler.jsonc:
-# Replace database_name and database_id in the d1_databases section
+# Copy the database_id from the output and update my-project-server/wrangler.jsonc
 ```
 
 Example output:
 ```
 [[d1_databases]]
 binding = "DB"
-database_name = "my-database"
+database_name = "my-project-database"
 database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
-```
-
-### 3. Rename Workers
-
-Update worker names to avoid conflicts:
-
-**tt-server/wrangler.jsonc:**
-```jsonc
-{
-  "name": "my-api",  // Change this
-  // ... rest of config
-}
-```
-
-**tt-client/wrangler.jsonc:**
-```jsonc
-{
-  "name": "my-web",  // Change this
-  "services": [
-    {
-      "binding": "GG_SERVER",
-      "service": "my-api"  // Must match server name
-    }
-  ]
-}
 ```
 
 ### 4. Set Up Database Schema
@@ -98,7 +71,7 @@ pnpm run db:generate
 # Apply existing migrations to local DB
 pnpm run db:migrate:local
 
-# Apply migrations to production DB
+# Apply migrations to production DB (after deploying)
 pnpm run db:migrate:remote
 ```
 
@@ -115,7 +88,7 @@ Create `my-project-server/.dev.vars`:
 ```bash
 BETTER_AUTH_SECRET="<generated-secret>"
 
-# Add OAuth provider credentials (based on enabled providers in tt-shared/oauth-config.ts)
+# Add OAuth provider credentials (based on enabled providers in my-project-shared/src/oauth-config.ts)
 # Format: {PROVIDER}_CLIENT_ID and {PROVIDER}_CLIENT_SECRET
 GOOGLE_CLIENT_ID="your-client-id"
 GOOGLE_CLIENT_SECRET="your-client-secret"
@@ -177,45 +150,45 @@ pnpm --filter my-project-client run build
 pnpm --filter my-project-client exec wrangler deploy
 ```
 
-Your app is now live at `https://my-web.YOUR_SUBDOMAIN.workers.dev`!
+Your app is now live at `https://my-project-client.YOUR_SUBDOMAIN.workers.dev`!
 
 ---
 
-## 📁 Project Structure
+## Project Structure
 
 ```
-gg/
-├── tt-server/          # Hono API server
+my-project/
+├── my-project-server/      # Hono API server
 │   ├── src/
-│   │   ├── app.ts      # Main Hono app with routes
+│   │   ├── app.ts          # Main Hono app with routes
 │   │   └── lib/
-│   │       ├── auth.ts    # BetterAuth configuration
-│   │       └── prisma.ts  # Prisma client
+│   │       ├── auth.ts     # BetterAuth configuration
+│   │       └── prisma.ts   # Prisma client
 │   ├── prisma/
-│   │   └── schema.prisma  # Database schema
-│   ├── migrations/     # D1 migrations
-│   └── wrangler.jsonc  # Server Worker config
+│   │   └── schema.prisma   # Database schema
+│   ├── migrations/         # D1 migrations
+│   └── wrangler.jsonc      # Server Worker config
 │
-├── tt-client/          # React SPA
+├── my-project-client/      # React SPA
 │   ├── src/
-│   │   ├── routes/     # TanStack Router file-based routes
-│   │   ├── components/ # React components + shadcn/ui
+│   │   ├── routes/         # TanStack Router file-based routes
+│   │   ├── components/     # React components + shadcn/ui
 │   │   ├── lib/
 │   │   │   ├── auth.ts         # BetterAuth client
 │   │   │   └── auth-context.tsx # Auth context provider
-│   │   ├── worker.ts   # Cloudflare Worker (proxies /api/*)
-│   │   └── main.tsx    # React app entry
-│   └── wrangler.jsonc  # Client Worker config
+│   │   ├── worker.ts       # Cloudflare Worker (proxies /api/*)
+│   │   └── main.tsx        # React app entry
+│   └── wrangler.jsonc      # Client Worker config
 │
-├── tt-shared/          # Shared types
+├── my-project-shared/      # Shared types
 │   └── src/types.ts
 │
-└── CLAUDE.md           # Developer documentation
+└── CLAUDE.md               # Developer documentation
 ```
 
 ---
 
-## 🔐 Authentication
+## Authentication
 
 **Pre-configured with BetterAuth:**
 - Session-based authentication with cookies
@@ -244,13 +217,13 @@ function MyComponent() {
 
 ---
 
-## 🎨 UI Components (shadcn/ui)
+## UI Components (shadcn/ui)
 
 Pre-configured with shadcn/ui + Tailwind CSS v4.
 
 **Add components:**
 ```bash
-cd tt-client
+cd my-project-client
 npx shadcn@canary add button card dialog
 ```
 
@@ -263,54 +236,54 @@ See [shadcn/ui docs](https://ui.shadcn.com/docs) for available components.
 
 ---
 
-## 📦 Available Scripts
+## Available Scripts
 
-### Server (tt-server)
+### Server (gg-server)
 
 ```bash
-pnpm --filter tt-server dev              # Start dev server
-pnpm --filter tt-server deploy           # Deploy to production
+pnpm --filter gg-server dev              # Start dev server
+pnpm --filter gg-server deploy           # Deploy to production
 
 # Database
-pnpm --filter tt-server run db:generate         # Generate Prisma client
-pnpm --filter tt-server run db:migrate:create   # Create migration file
-pnpm --filter tt-server run db:migrate:diff     # Generate SQL from schema
-pnpm --filter tt-server run db:migrate:local    # Apply migrations locally
-pnpm --filter tt-server run db:migrate:remote   # Apply to production
+pnpm --filter gg-server run db:generate         # Generate Prisma client
+pnpm --filter gg-server run db:migrate:create   # Create migration file
+pnpm --filter gg-server run db:migrate:diff     # Generate SQL from schema
+pnpm --filter gg-server run db:migrate:local    # Apply migrations locally
+pnpm --filter gg-server run db:migrate:remote   # Apply to production
 
 # Auth
-pnpm --filter tt-server run auth:generate       # Generate auth schema
+pnpm --filter gg-server run auth:generate       # Generate auth schema
 
 # Types
-pnpm --filter tt-server run cf-typegen          # Generate Cloudflare types
+pnpm --filter gg-server run cf-typegen          # Generate Cloudflare types
 ```
 
-### Client (tt-client)
+### Client (gg-client)
 
 ```bash
-pnpm --filter tt-client dev      # Start Vite dev server
-pnpm --filter tt-client build    # Build for production
-pnpm --filter tt-client deploy   # Deploy to Cloudflare
-pnpm --filter tt-client test     # Run tests
+pnpm --filter gg-client dev      # Start Vite dev server
+pnpm --filter gg-client build    # Build for production
+pnpm --filter gg-client deploy   # Deploy to Cloudflare
+pnpm --filter gg-client test     # Run tests
 ```
 
 ---
 
-## 🗄️ Database Management
+## Database Management
 
 ### Creating Migrations
 
-1. Edit `tt-server/prisma/schema.prisma`
-2. Generate Prisma client: `pnpm --filter tt-server run db:generate`
-3. Create migration file: `pnpm --filter tt-server run db:migrate:create add_users_table`
-4. Generate SQL: `pnpm --filter tt-server run db:migrate:diff > migrations/0002_add_users_table.sql`
-5. Apply locally: `pnpm --filter tt-server run db:migrate:local`
-6. Apply to production: `pnpm --filter tt-server run db:migrate:remote`
+1. Edit `gg-server/prisma/schema.prisma`
+2. Generate Prisma client: `pnpm --filter gg-server run db:generate`
+3. Create migration file: `pnpm --filter gg-server run db:migrate:create add_users_table`
+4. Generate SQL: `pnpm --filter gg-server run db:migrate:diff > migrations/0002_add_users_table.sql`
+5. Apply locally: `pnpm --filter gg-server run db:migrate:local`
+6. Apply to production: `pnpm --filter gg-server run db:migrate:remote`
 
 ### Example: Adding a New Table
 
 ```prisma
-// tt-server/prisma/schema.prisma
+// gg-server/prisma/schema.prisma
 model Post {
   id        String   @id @default(cuid())
   title     String
@@ -326,9 +299,9 @@ Then run the migration commands above.
 
 ---
 
-## 🌐 API Routes
+## API Routes
 
-### Server Routes (tt-server/src/app.ts)
+### Server Routes (gg-server/src/app.ts)
 
 - `GET /` - Health check
 - `GET /api/auth/*` - BetterAuth endpoints (session, OAuth, etc.)
@@ -338,7 +311,7 @@ Then run the migration commands above.
 ### Adding New Routes
 
 ```typescript
-// tt-server/src/app.ts
+// gg-server/src/app.ts
 app.get('/posts', async (c) => {
   const prisma = getPrisma(c.env.DB);
   const posts = await prisma.post.findMany();
@@ -348,12 +321,12 @@ app.get('/posts', async (c) => {
 
 ---
 
-## 🔒 Protected Routes
+## Protected Routes
 
 Use the `_authenticated` layout for protected routes:
 
 ```tsx
-// tt-client/src/routes/_authenticated/profile.tsx
+// gg-client/src/routes/_authenticated/profile.tsx
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -370,7 +343,7 @@ The `_authenticated` layout automatically redirects unauthenticated users to `/l
 
 ---
 
-## 🚢 Deployment
+## Deployment
 
 ### GitHub Actions (Auto-deploy)
 
@@ -388,27 +361,27 @@ CI/CD workflows are pre-configured in `.github/workflows/`:
 
 ```bash
 # Deploy everything
-pnpm --filter tt-server exec wrangler deploy
-pnpm --filter tt-client run build && pnpm --filter tt-client exec wrangler deploy
+pnpm --filter gg-server exec wrangler deploy
+pnpm --filter gg-client run build && pnpm --filter gg-client exec wrangler deploy
 ```
 
 ---
 
-## 🎯 Key Features
+## Key Features
 
-✅ **Monorepo** - pnpm workspace with shared types
-✅ **Type-safe** - Full TypeScript with Prisma
-✅ **Authentication** - BetterAuth with OAuth
-✅ **Payments** - Stripe subscriptions with Better Auth plugin
-✅ **Protected Routes** - TanStack Router auth guards
-✅ **UI Components** - shadcn/ui + Tailwind v4
-✅ **Database** - Prisma + Cloudflare D1
-✅ **Service Bindings** - No CORS in production
-✅ **CI/CD** - Auto-deploy via GitHub Actions
+- **Monorepo** - pnpm workspace with shared types
+- **Type-safe** - Full TypeScript with Prisma
+- **Authentication** - BetterAuth with OAuth
+- **Payments** - Stripe subscriptions with Better Auth plugin
+- **Protected Routes** - TanStack Router auth guards
+- **UI Components** - shadcn/ui + Tailwind v4
+- **Database** - Prisma + Cloudflare D1
+- **Service Bindings** - No CORS in production
+- **CI/CD** - Auto-deploy via GitHub Actions
 
 ---
 
-## 📚 Documentation
+## Documentation
 
 - [CLAUDE.md](./CLAUDE.md) - Detailed developer docs
 - [STRIPE_SETUP.md](./STRIPE_SETUP.md) - Stripe integration & subscription management guide
@@ -420,16 +393,17 @@ pnpm --filter tt-client run build && pnpm --filter tt-client exec wrangler deplo
 
 ---
 
-## 🐛 Troubleshooting
+## Troubleshooting
 
-**Auth not working?**
+**Auth not working (500 errors)?**
+- Ensure `nodejs_compat` flag is in `gg-server/wrangler.jsonc` (required for BetterAuth)
 - Check `BETTER_AUTH_SECRET` is set in `.dev.vars` and production secrets
 - Verify OAuth credentials are correct
-- Check `trustedOrigins` in `tt-server/src/lib/auth.ts` includes your domains
+- Check `trustedOrigins` in `gg-server/src/lib/auth.ts` includes your domains
 
 **Database errors?**
-- Run `pnpm --filter tt-server run db:generate` after schema changes
-- Apply migrations: `pnpm --filter tt-server run db:migrate:local`
+- Run `pnpm --filter gg-server run db:generate` after schema changes
+- Apply migrations: `pnpm --filter gg-server run db:migrate:local`
 
 **Build errors?**
 - Run `pnpm install` from workspace root
@@ -437,10 +411,10 @@ pnpm --filter tt-client run build && pnpm --filter tt-client exec wrangler deplo
 
 **Service binding not working?**
 - Verify worker names match in both `wrangler.jsonc` files
-- Check `tt-client/wrangler.jsonc` service binding points to server name
+- Check `gg-client/wrangler.jsonc` service binding points to server name
 
 ---
 
-## 📄 License
+## License
 
 MIT

@@ -6,7 +6,7 @@
 set -e
 
 if [ -z "$1" ]; then
-  echo "❌ Error: Please provide a project name"
+  echo "Error: Please provide a project name"
   echo "Usage: ./rename-project.sh my-project"
   echo ""
   echo "Example: ./rename-project.sh teachtab"
@@ -18,12 +18,15 @@ PROJECT_NAME="$1"
 CLIENT_NAME="${PROJECT_NAME}-client"
 SERVER_NAME="${PROJECT_NAME}-server"
 SHARED_NAME="${PROJECT_NAME}-shared"
+# Convert to uppercase for binding name (e.g., MY_PROJECT_SERVER)
+BINDING_NAME="${PROJECT_NAME^^}_SERVER"
 
-echo "🚀 Renaming GG template to: $PROJECT_NAME"
+echo "Renaming GG template to: $PROJECT_NAME"
 echo ""
-echo "  Client: gg-client → $CLIENT_NAME"
-echo "  Server: gg-server → $SERVER_NAME"
-echo "  Shared: gg-shared → $SHARED_NAME"
+echo "  Client: gg-client -> $CLIENT_NAME"
+echo "  Server: gg-server -> $SERVER_NAME"
+echo "  Shared: gg-shared -> $SHARED_NAME"
+echo "  Binding: GG_SERVER -> $BINDING_NAME"
 echo ""
 read -p "Continue? (y/N) " -n 1 -r
 echo
@@ -33,20 +36,22 @@ if [[ ! $REPLY =~ ^[Yy]$ ]]; then
 fi
 
 echo ""
-echo "📝 Step 1: Renaming directories..."
+echo "Step 1: Renaming directories..."
 mv gg-client "$CLIENT_NAME"
 mv gg-server "$SERVER_NAME"
 mv gg-shared "$SHARED_NAME"
-echo "✅ Directories renamed"
+echo "Done: Directories renamed"
 
 echo ""
-echo "📝 Step 2: Updating package.json files..."
+echo "Step 2: Updating pnpm-workspace.yaml..."
+sed -i.bak "s/gg-server/$SERVER_NAME/g" pnpm-workspace.yaml
+sed -i.bak "s/gg-client/$CLIENT_NAME/g" pnpm-workspace.yaml
+sed -i.bak "s/gg-shared/$SHARED_NAME/g" pnpm-workspace.yaml
+rm pnpm-workspace.yaml.bak
+echo "Done: pnpm-workspace.yaml updated"
 
-# Update root package.json
-sed -i.bak "s/gg-client/$CLIENT_NAME/g" package.json
-sed -i.bak "s/gg-server/$SERVER_NAME/g" package.json
-sed -i.bak "s/gg-shared/$SHARED_NAME/g" package.json
-rm package.json.bak
+echo ""
+echo "Step 3: Updating package.json files..."
 
 # Update client package.json
 sed -i.bak "s/\"name\": \"gg-client\"/\"name\": \"$CLIENT_NAME\"/" "$CLIENT_NAME/package.json"
@@ -55,16 +60,18 @@ rm "$CLIENT_NAME/package.json.bak"
 
 # Update server package.json
 sed -i.bak "s/\"name\": \"gg-server\"/\"name\": \"$SERVER_NAME\"/" "$SERVER_NAME/package.json"
+sed -i.bak "s/gg-shared/$SHARED_NAME/g" "$SERVER_NAME/package.json"
+sed -i.bak "s/gg-database/${PROJECT_NAME}-database/g" "$SERVER_NAME/package.json"
 rm "$SERVER_NAME/package.json.bak"
 
 # Update shared package.json
 sed -i.bak "s/\"name\": \"gg-shared\"/\"name\": \"$SHARED_NAME\"/" "$SHARED_NAME/package.json"
 rm "$SHARED_NAME/package.json.bak"
 
-echo "✅ package.json files updated"
+echo "Done: package.json files updated"
 
 echo ""
-echo "📝 Step 3: Updating wrangler.jsonc files..."
+echo "Step 4: Updating wrangler.jsonc files..."
 
 # Update server wrangler.jsonc
 sed -i.bak "s/\"name\": \"gg-server\"/\"name\": \"$SERVER_NAME\"/" "$SERVER_NAME/wrangler.jsonc"
@@ -74,49 +81,106 @@ rm "$SERVER_NAME/wrangler.jsonc.bak"
 # Update client wrangler.jsonc
 sed -i.bak "s/\"name\": \"gg-client\"/\"name\": \"$CLIENT_NAME\"/" "$CLIENT_NAME/wrangler.jsonc"
 sed -i.bak "s/\"service\": \"gg-server\"/\"service\": \"$SERVER_NAME\"/" "$CLIENT_NAME/wrangler.jsonc"
+sed -i.bak "s/\"binding\": \"GG_SERVER\"/\"binding\": \"$BINDING_NAME\"/" "$CLIENT_NAME/wrangler.jsonc"
+sed -i.bak "s/gg-server/$SERVER_NAME/g" "$CLIENT_NAME/wrangler.jsonc"
 rm "$CLIENT_NAME/wrangler.jsonc.bak"
 
-echo "✅ wrangler.jsonc files updated"
+echo "Done: wrangler.jsonc files updated"
 
 echo ""
-echo "📝 Step 4: Updating imports and references..."
+echo "Step 5: Updating source code imports..."
 
-# Update client worker.ts
-sed -i.bak "s/GG_SERVER/${PROJECT_NAME^^}_SERVER/g" "$CLIENT_NAME/src/worker.ts"
+# Update client worker.ts binding name
+sed -i.bak "s/GG_SERVER/$BINDING_NAME/g" "$CLIENT_NAME/src/worker.ts"
+sed -i.bak "s/gg-server/$SERVER_NAME/g" "$CLIENT_NAME/src/worker.ts"
 rm "$CLIENT_NAME/src/worker.ts.bak"
 
-# Update README.md references
+# Update all source files that import from gg-shared
+find "$CLIENT_NAME/src" -name "*.ts" -o -name "*.tsx" | while read file; do
+  if grep -q "gg-shared" "$file" 2>/dev/null; then
+    sed -i.bak "s/gg-shared/$SHARED_NAME/g" "$file"
+    rm "${file}.bak"
+  fi
+done
+
+find "$SERVER_NAME/src" -name "*.ts" | while read file; do
+  if grep -q "gg-shared" "$file" 2>/dev/null; then
+    sed -i.bak "s/gg-shared/$SHARED_NAME/g" "$file"
+    rm "${file}.bak"
+  fi
+done
+
+echo "Done: Source imports updated"
+
+echo ""
+echo "Step 6: Updating documentation files..."
+
+# Update README.md
 sed -i.bak "s/gg-client/$CLIENT_NAME/g" README.md
 sed -i.bak "s/gg-server/$SERVER_NAME/g" README.md
 sed -i.bak "s/gg-shared/$SHARED_NAME/g" README.md
-sed -i.bak "s/my-project/$PROJECT_NAME/g" README.md
 rm README.md.bak
 
-# Update CLAUDE.md references
+# Update CLAUDE.md
 sed -i.bak "s/gg-client/$CLIENT_NAME/g" CLAUDE.md
 sed -i.bak "s/gg-server/$SERVER_NAME/g" CLAUDE.md
 sed -i.bak "s/gg-shared/$SHARED_NAME/g" CLAUDE.md
+sed -i.bak "s/GG_SERVER/$BINDING_NAME/g" CLAUDE.md
 sed -i.bak "s/GG Template/${PROJECT_NAME^} Template/g" CLAUDE.md
 rm CLAUDE.md.bak
 
-echo "✅ Imports and references updated"
+# Update AGENTS.md if it exists
+if [ -f "AGENTS.md" ]; then
+  sed -i.bak "s/gg-client/$CLIENT_NAME/g" AGENTS.md
+  sed -i.bak "s/gg-server/$SERVER_NAME/g" AGENTS.md
+  sed -i.bak "s/gg-shared/$SHARED_NAME/g" AGENTS.md
+  sed -i.bak "s/GG_SERVER/$BINDING_NAME/g" AGENTS.md
+  rm AGENTS.md.bak
+fi
+
+# Update STRIPE_SETUP.md if it exists
+if [ -f "STRIPE_SETUP.md" ]; then
+  sed -i.bak "s/gg-client/$CLIENT_NAME/g" STRIPE_SETUP.md
+  sed -i.bak "s/gg-server/$SERVER_NAME/g" STRIPE_SETUP.md
+  sed -i.bak "s/gg-database/${PROJECT_NAME}-database/g" STRIPE_SETUP.md
+  rm STRIPE_SETUP.md.bak
+fi
+
+# Update AUTH_SETUP.md if it exists
+if [ -f "AUTH_SETUP.md" ]; then
+  sed -i.bak "s/gg-client/$CLIENT_NAME/g" AUTH_SETUP.md
+  sed -i.bak "s/gg-server/$SERVER_NAME/g" AUTH_SETUP.md
+  rm AUTH_SETUP.md.bak
+fi
+
+# Update shared README.md if it exists
+if [ -f "$SHARED_NAME/README.md" ]; then
+  sed -i.bak "s/gg-shared/$SHARED_NAME/g" "$SHARED_NAME/README.md"
+  sed -i.bak "s/gg-server/$SERVER_NAME/g" "$SHARED_NAME/README.md"
+  rm "$SHARED_NAME/README.md.bak"
+fi
+
+echo "Done: Documentation updated"
 
 echo ""
-echo "📝 Step 5: Updating GitHub workflows..."
+echo "Step 7: Updating GitHub workflows..."
 
 if [ -d ".github/workflows" ]; then
   sed -i.bak "s/gg-server/$SERVER_NAME/g" .github/workflows/deploy-server.yml
   sed -i.bak "s/gg-client/$CLIENT_NAME/g" .github/workflows/deploy-client.yml
-  rm .github/workflows/*.bak
-  echo "✅ GitHub workflows updated"
+  rm .github/workflows/*.bak 2>/dev/null || true
+  echo "Done: GitHub workflows updated"
 else
-  echo "⚠️  No .github/workflows directory found (skipped)"
+  echo "Skipped: No .github/workflows directory found"
 fi
 
 echo ""
-echo "🎉 Done! Your project has been renamed to: $PROJECT_NAME"
+echo "========================================"
+echo "Project renamed to: $PROJECT_NAME"
+echo "========================================"
 echo ""
-echo "📋 Next steps:"
+echo "Next steps:"
+echo ""
 echo "  1. Create D1 database:"
 echo "     cd $SERVER_NAME && pnpm exec wrangler d1 create ${PROJECT_NAME}-database"
 echo ""
@@ -125,10 +189,16 @@ echo ""
 echo "  3. Reinstall dependencies:"
 echo "     pnpm install"
 echo ""
-echo "  4. Run database migrations:"
+echo "  4. Generate Prisma client:"
+echo "     pnpm --filter $SERVER_NAME run db:generate"
+echo ""
+echo "  5. Run database migrations:"
 echo "     pnpm --filter $SERVER_NAME run db:migrate:local"
 echo ""
-echo "  5. Start development:"
+echo "  6. Create .dev.vars file:"
+echo "     See README.md for required environment variables"
+echo ""
+echo "  7. Start development:"
 echo "     Terminal 1: pnpm --filter $SERVER_NAME dev"
 echo "     Terminal 2: cd $CLIENT_NAME && VITE_API_BASE=http://localhost:8787 pnpm dev"
 echo ""
