@@ -109,6 +109,13 @@ if [ -f "$CLIENT_NAME/index.html" ]; then
   rm "$CLIENT_NAME/index.html.bak"
 fi
 
+# Update client .env.production URLs
+if [ -f "$CLIENT_NAME/.env.production" ]; then
+  sed -i.bak "s/gg-server/$SERVER_NAME/g" "$CLIENT_NAME/.env.production"
+  sed -i.bak "s/gg-client/$CLIENT_NAME/g" "$CLIENT_NAME/.env.production"
+  rm "$CLIENT_NAME/.env.production.bak"
+fi
+
 find "$SERVER_NAME/src" -name "*.ts" | while read file; do
   if grep -q "gg-shared" "$file" 2>/dev/null; then
     sed -i.bak "s/gg-shared/$SHARED_NAME/g" "$file"
