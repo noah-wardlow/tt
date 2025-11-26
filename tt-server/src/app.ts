@@ -39,11 +39,11 @@ app.use(
       const allowedOrigins = [
         "http://localhost:3000",
         "http://localhost:8787",
-        "https://gg-client.nmwardlow.workers.dev",
+        "https://tt-client.nmwardlow.workers.dev",
       ];
       return allowedOrigins.includes(origin)
         ? origin
-        : "https://gg-client.nmwardlow.workers.dev";
+        : "https://tt-client.nmwardlow.workers.dev";
     },
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
     allowHeaders: ["Authorization", "Content-Type"],

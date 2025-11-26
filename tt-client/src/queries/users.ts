@@ -1,6 +1,6 @@
 import { queryOptions } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api";
-import type { User } from "gg-shared/types";
+import type { User } from "tt-shared/types";
 
 export const usersQueryOptions = queryOptions({
   queryKey: ["users"],

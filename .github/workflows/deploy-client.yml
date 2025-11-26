@@ -1,15 +1,15 @@
-name: Deploy gg-client
+name: Deploy tt-client
 
 on:
   push:
     branches: [ main ]
     paths:
-      - 'gg-client/**'
+      - 'tt-client/**'
       - '.github/workflows/deploy-client.yml'
       - 'pnpm-lock.yaml'
 
 concurrency:
-  group: gg-client-${{ github.ref }}
+  group: tt-client-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: gg-client
+        working-directory: tt-client
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,10 +32,10 @@ jobs:
 
       - name: Install dependencies
         working-directory: .
-        run: pnpm install --frozen-lockfile --filter gg-client --filter gg-shared --filter gg-server
+        run: pnpm install --frozen-lockfile --filter tt-client --filter gg-shared --filter tt-server
 
       - name: Generate Prisma Client
-        working-directory: gg-server
+        working-directory: tt-server
         run: pnpm run db:generate
 
       - name: Build client (Vite)

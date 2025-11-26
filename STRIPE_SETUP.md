@@ -15,7 +15,7 @@ This project uses [Better Auth's Stripe plugin](https://www.better-auth.com/docs
 
 ### Development (`.dev.vars`)
 
-Create `gg-server/.dev.vars` with:
+Create `tt-server/.dev.vars` with:
 
 ```bash
 # Stripe API Keys
@@ -40,7 +40,7 @@ DISCORD_CLIENT_SECRET=...
 Set secrets using `wrangler secret put`:
 
 ```bash
-cd gg-server
+cd tt-server
 
 # Required
 wrangler secret put STRIPE_SECRET_KEY
@@ -148,7 +148,7 @@ CREATE TABLE "subscription" (
 );
 ```
 
-Migrations are in `gg-server/migrations/`:
+Migrations are in `tt-server/migrations/`:
 - `0006_add_stripe_customer_id.sql` - Adds `stripeCustomerId` to user table
 - `0008_add_stripe_subscription.sql` - Creates subscription table
 
@@ -158,7 +158,7 @@ Migrations are in `gg-server/migrations/`:
 
 #### Enable Subscription Plugin
 
-Already configured in `gg-client/src/lib/auth.ts`:
+Already configured in `tt-client/src/lib/auth.ts`:
 
 ```typescript
 import { createAuthClient } from "better-auth/react";
@@ -228,7 +228,7 @@ await authClient.subscription.billingPortal({
 
 ### Server-Side Configuration
 
-Configuration in `gg-server/src/lib/auth.ts`:
+Configuration in `tt-server/src/lib/auth.ts`:
 
 ```typescript
 import { betterAuth } from "better-auth";
@@ -412,7 +412,7 @@ stripe trigger customer.subscription.deleted
 2. **Verify webhook secret**:
    ```bash
    # Development
-   cat gg-server/.dev.vars | grep STRIPE_WEBHOOK_SECRET
+   cat tt-server/.dev.vars | grep STRIPE_WEBHOOK_SECRET
 
    # Production
    wrangler secret list
@@ -434,12 +434,12 @@ stripe trigger customer.subscription.deleted
 
 2. Check database:
    ```bash
-   wrangler d1 execute gg-database --local --command "SELECT * FROM subscription"
+   wrangler d1 execute tt-database --local --command "SELECT * FROM subscription"
    ```
 
 ### Environment Variable Issues
 
-1. **Development**: Ensure `.dev.vars` exists in `gg-server/`
+1. **Development**: Ensure `.dev.vars` exists in `tt-server/`
 2. **Production**: Verify secrets are set:
    ```bash
    wrangler secret list
@@ -454,7 +454,7 @@ If migrating from custom Stripe setup to Better Auth:
 - [x] Update client `auth.ts` with `stripeClient` plugin
 - [x] Rename `STRIPE_PRIVATE_KEY` → `STRIPE_SECRET_KEY`
 - [x] Run database migrations (`0006` and `0008`)
-- [x] Generate Prisma client (`pnpm --filter gg-server run db:generate`)
+- [x] Generate Prisma client (`pnpm --filter tt-server run db:generate`)
 - [x] Update Stripe webhook URLs in dashboard
 - [ ] Update `.dev.vars` with new variable names
 - [ ] Update production secrets with `wrangler secret put`

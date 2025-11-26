@@ -30,7 +30,7 @@ BetterAuth has been integrated with Google and Discord OAuth providers.
 
 #### For Local Development
 
-Create `gg-server/.dev.vars` file:
+Create `tt-server/.dev.vars` file:
 ```
 GOOGLE_CLIENT_ID=your-google-client-id
 GOOGLE_CLIENT_SECRET=your-google-client-secret
@@ -48,7 +48,7 @@ openssl rand -base64 32
 
 Set secrets using Wrangler:
 ```bash
-cd gg-server
+cd tt-server
 wrangler secret put GOOGLE_CLIENT_ID
 wrangler secret put GOOGLE_CLIENT_SECRET
 wrangler secret put DISCORD_CLIENT_ID
@@ -61,7 +61,7 @@ wrangler secret put BETTER_AUTH_SECRET
 BetterAuth provides a CLI to generate the correct database schema:
 
 ```bash
-cd gg-server
+cd tt-server
 
 # Option A: Use BetterAuth CLI to generate schema (recommended)
 pnpm auth:generate
@@ -81,13 +81,13 @@ pnpm db:migrate:remote  # For production
 
 Terminal 1 (Server):
 ```bash
-cd gg-server
+cd tt-server
 pnpm dev
 ```
 
 Terminal 2 (Client):
 ```bash
-cd gg-client
+cd tt-client
 pnpm dev
 ```
 
@@ -101,7 +101,7 @@ The login UI has been added to the home page at `src/routes/index.tsx`. Users ca
 
 ## Files Modified/Created
 
-### Server (`gg-server`)
+### Server (`tt-server`)
 - `src/lib/auth.ts` - BetterAuth configuration with Kysely + D1 adapter
 - `src/app.ts` - Auth routes integration
 - `prisma/schema.prisma` - Added User, Session, Account, Verification tables
@@ -111,7 +111,7 @@ The login UI has been added to the home page at `src/routes/index.tsx`. Users ca
 - `wrangler.jsonc` - Updated for environment variables
 - `package.json` - Added `auth:generate` script, kysely, kysely-d1
 
-### Client (`gg-client`)
+### Client (`tt-client`)
 - `src/lib/auth.ts` - Client-side auth utilities
 - `src/routes/index.tsx` - Added login UI with Google/Discord buttons
 

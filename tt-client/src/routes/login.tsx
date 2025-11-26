@@ -14,7 +14,7 @@ import {
   oauthConfig,
   getEnabledProviders,
   type OAuthProviderName,
-} from "gg-shared/oauth-config";
+} from "tt-shared/oauth-config";
 import { oauthIcons } from "@/components/oauth-icons";
 import { Loader2 } from "lucide-react";
 import { useState } from "react";

@@ -1,4 +1,4 @@
 packages:
-  - gg-server
-  - gg-client
-  - gg-shared
+  - tt-server
+  - tt-client
+  - tt-shared

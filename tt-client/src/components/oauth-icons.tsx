@@ -1,4 +1,4 @@
-import type { OAuthProviderName } from "gg-shared/oauth-config";
+import type { OAuthProviderName } from "tt-shared/oauth-config";
 
 interface IconProps {
   className?: string;

@@ -1,13 +1,14 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
-	"name": "gg-server",
+	"name": "tt-server",
 	"compatibility_date": "2025-08-03",
+	"compatibility_flags": ["nodejs_compat"],
 	"main": "./src/index.ts",
 	"d1_databases": [
 		{
 			"binding": "DB",
-			"database_name": "gg-database",
-			"database_id": "c43a0966-45f6-432b-888e-d365a7cbd5b1"
+			"database_name": "tt-database",
+			"database_id": "51a434c1-0270-49ba-a47e-81dca87b5756"
 		}
 	],
 	// For local development, create a .dev.vars file with your secrets

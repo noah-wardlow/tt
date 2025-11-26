@@ -1,5 +1,5 @@
 {
-  "name": "gg-client",
+  "name": "tt-client",
   "compatibility_date": "2025-04-03",
   // Use Workers Assets for SPA static files (wrangler serves Vite build)
   "assets": {
@@ -11,11 +11,11 @@
   },
   // Custom Worker entry to proxy API calls and serve assets
   "main": "./src/worker.ts",
-  // Bind gg-server service so client can call backend without CORS
+  // Bind tt-server service so client can call backend without CORS
   "services": [
     {
-      "binding": "GG_SERVER",
-      "service": "gg-server"
+      "binding": "TT_SERVER",
+      "service": "tt-server"
     }
   ]
 }

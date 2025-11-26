@@ -1,15 +1,15 @@
-name: Deploy gg-server
+name: Deploy tt-server
 
 on:
   push:
     branches: [main]
     paths:
-      - "gg-server/**"
+      - "tt-server/**"
       - ".github/workflows/deploy-server.yml"
       - "pnpm-lock.yaml"
 
 concurrency:
-  group: gg-server-${{ github.ref }}
+  group: tt-server-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: gg-server
+        working-directory: tt-server
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,7 +32,7 @@ jobs:
 
       - name: Install dependencies
         working-directory: .
-        run: pnpm install --frozen-lockfile --filter gg-server --filter gg-shared
+        run: pnpm install --frozen-lockfile --filter tt-server --filter gg-shared
 
       - name: Generate Prisma Client
         run: pnpm run db:generate

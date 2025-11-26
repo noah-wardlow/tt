@@ -1,7 +1,7 @@
 import { betterAuth } from "better-auth";
 import { Kysely } from "kysely";
 import { D1Dialect } from "kysely-d1";
-import { getEnabledProviders } from "gg-shared/oauth-config";
+import { getEnabledProviders } from "tt-shared/oauth-config";
 import {
   getClientIdEnvVar,
   getClientSecretEnvVar,
@@ -84,8 +84,8 @@ export function getAuth(db: D1Database, env: AuthEnv) {
     trustedOrigins: [
       "http://localhost:3000",
       "http://localhost:8787",
-      "https://gg-client.nmwardlow.workers.dev",
-      "https://gg-server.nmwardlow.workers.dev",
+      "https://tt-client.nmwardlow.workers.dev",
+      "https://tt-server.nmwardlow.workers.dev",
     ],
     plugins: [
       ...(stripeClient && env.STRIPE_WEBHOOK_SECRET

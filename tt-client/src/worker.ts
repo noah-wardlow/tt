@@ -2,12 +2,12 @@ export default {
   async fetch(request: Request, env: Env, _ctx: unknown): Promise<Response> {
     const url = new URL(request.url)
 
-    // Proxy API requests to the gg-server service binding
+    // Proxy API requests to the tt-server service binding
     if (url.pathname.startsWith('/api/')) {
       const proxiedUrl = new URL(request.url)
-      // Strip the /api prefix so gg-server sees the original route
+      // Strip the /api prefix so tt-server sees the original route
       proxiedUrl.pathname = url.pathname.replace(/^\/api\//, '/')
-      return env.GG_SERVER.fetch(new Request(proxiedUrl.toString(), request))
+      return env.TT_SERVER.fetch(new Request(proxiedUrl.toString(), request))
     }
 
     // Serve static assets for everything else (SPA fallback handled by wrangler "assets")
@@ -27,6 +27,6 @@ type Fetcher = {
 }
 
 export interface Env {
-  GG_SERVER: Fetcher
+  TT_SERVER: Fetcher
   ASSETS: Fetcher
 }

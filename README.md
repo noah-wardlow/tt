@@ -1,4 +1,4 @@
-# GG Template
+# TT Template
 
 A production-ready fullstack template for Cloudflare Workers with authentication.
 
@@ -25,14 +25,14 @@ cd my-project
 ./rename-project.sh my-project
 
 # This will rename:
-#   gg-client → my-project-client
-#   gg-server → my-project-server
-#   gg-shared → my-project-shared
+#   tt-client → my-project-client
+#   tt-server → my-project-server
+#   tt-shared → my-project-shared
 # And update all references in configs, imports, and docs
 ```
 
 **Or rename manually:**
-- Rename directories: `gg-client`, `gg-server`, `gg-shared`
+- Rename directories: `tt-client`, `tt-server`, `tt-shared`
 - Update `package.json` workspace names
 - Update `wrangler.jsonc` names and service bindings
 - Update imports in code
@@ -66,7 +66,7 @@ database_id = "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 Update worker names to avoid conflicts:
 
-**gg-server/wrangler.jsonc:**
+**tt-server/wrangler.jsonc:**
 ```jsonc
 {
   "name": "my-api",  // Change this
@@ -74,7 +74,7 @@ Update worker names to avoid conflicts:
 }
 ```
 
-**gg-client/wrangler.jsonc:**
+**tt-client/wrangler.jsonc:**
 ```jsonc
 {
   "name": "my-web",  // Change this
@@ -115,7 +115,7 @@ Create `my-project-server/.dev.vars`:
 ```bash
 BETTER_AUTH_SECRET="<generated-secret>"
 
-# Add OAuth provider credentials (based on enabled providers in gg-shared/oauth-config.ts)
+# Add OAuth provider credentials (based on enabled providers in tt-shared/oauth-config.ts)
 # Format: {PROVIDER}_CLIENT_ID and {PROVIDER}_CLIENT_SECRET
 GOOGLE_CLIENT_ID="your-client-id"
 GOOGLE_CLIENT_SECRET="your-client-secret"
@@ -185,7 +185,7 @@ Your app is now live at `https://my-web.YOUR_SUBDOMAIN.workers.dev`!
 
 ```
 gg/
-├── gg-server/          # Hono API server
+├── tt-server/          # Hono API server
 │   ├── src/
 │   │   ├── app.ts      # Main Hono app with routes
 │   │   └── lib/
@@ -196,7 +196,7 @@ gg/
 │   ├── migrations/     # D1 migrations
 │   └── wrangler.jsonc  # Server Worker config
 │
-├── gg-client/          # React SPA
+├── tt-client/          # React SPA
 │   ├── src/
 │   │   ├── routes/     # TanStack Router file-based routes
 │   │   ├── components/ # React components + shadcn/ui
@@ -207,7 +207,7 @@ gg/
 │   │   └── main.tsx    # React app entry
 │   └── wrangler.jsonc  # Client Worker config
 │
-├── gg-shared/          # Shared types
+├── tt-shared/          # Shared types
 │   └── src/types.ts
 │
 └── CLAUDE.md           # Developer documentation
@@ -250,7 +250,7 @@ Pre-configured with shadcn/ui + Tailwind CSS v4.
 
 **Add components:**
 ```bash
-cd gg-client
+cd tt-client
 npx shadcn@canary add button card dialog
 ```
 
@@ -265,33 +265,33 @@ See [shadcn/ui docs](https://ui.shadcn.com/docs) for available components.
 
 ## 📦 Available Scripts
 
-### Server (gg-server)
+### Server (tt-server)
 
 ```bash
-pnpm --filter gg-server dev              # Start dev server
-pnpm --filter gg-server deploy           # Deploy to production
+pnpm --filter tt-server dev              # Start dev server
+pnpm --filter tt-server deploy           # Deploy to production
 
 # Database
-pnpm --filter gg-server run db:generate         # Generate Prisma client
-pnpm --filter gg-server run db:migrate:create   # Create migration file
-pnpm --filter gg-server run db:migrate:diff     # Generate SQL from schema
-pnpm --filter gg-server run db:migrate:local    # Apply migrations locally
-pnpm --filter gg-server run db:migrate:remote   # Apply to production
+pnpm --filter tt-server run db:generate         # Generate Prisma client
+pnpm --filter tt-server run db:migrate:create   # Create migration file
+pnpm --filter tt-server run db:migrate:diff     # Generate SQL from schema
+pnpm --filter tt-server run db:migrate:local    # Apply migrations locally
+pnpm --filter tt-server run db:migrate:remote   # Apply to production
 
 # Auth
-pnpm --filter gg-server run auth:generate       # Generate auth schema
+pnpm --filter tt-server run auth:generate       # Generate auth schema
 
 # Types
-pnpm --filter gg-server run cf-typegen          # Generate Cloudflare types
+pnpm --filter tt-server run cf-typegen          # Generate Cloudflare types
 ```
 
-### Client (gg-client)
+### Client (tt-client)
 
 ```bash
-pnpm --filter gg-client dev      # Start Vite dev server
-pnpm --filter gg-client build    # Build for production
-pnpm --filter gg-client deploy   # Deploy to Cloudflare
-pnpm --filter gg-client test     # Run tests
+pnpm --filter tt-client dev      # Start Vite dev server
+pnpm --filter tt-client build    # Build for production
+pnpm --filter tt-client deploy   # Deploy to Cloudflare
+pnpm --filter tt-client test     # Run tests
 ```
 
 ---
@@ -300,17 +300,17 @@ pnpm --filter gg-client test     # Run tests
 
 ### Creating Migrations
 
-1. Edit `gg-server/prisma/schema.prisma`
-2. Generate Prisma client: `pnpm --filter gg-server run db:generate`
-3. Create migration file: `pnpm --filter gg-server run db:migrate:create add_users_table`
-4. Generate SQL: `pnpm --filter gg-server run db:migrate:diff > migrations/0002_add_users_table.sql`
-5. Apply locally: `pnpm --filter gg-server run db:migrate:local`
-6. Apply to production: `pnpm --filter gg-server run db:migrate:remote`
+1. Edit `tt-server/prisma/schema.prisma`
+2. Generate Prisma client: `pnpm --filter tt-server run db:generate`
+3. Create migration file: `pnpm --filter tt-server run db:migrate:create add_users_table`
+4. Generate SQL: `pnpm --filter tt-server run db:migrate:diff > migrations/0002_add_users_table.sql`
+5. Apply locally: `pnpm --filter tt-server run db:migrate:local`
+6. Apply to production: `pnpm --filter tt-server run db:migrate:remote`
 
 ### Example: Adding a New Table
 
 ```prisma
-// gg-server/prisma/schema.prisma
+// tt-server/prisma/schema.prisma
 model Post {
   id        String   @id @default(cuid())
   title     String
@@ -328,7 +328,7 @@ Then run the migration commands above.
 
 ## 🌐 API Routes
 
-### Server Routes (gg-server/src/app.ts)
+### Server Routes (tt-server/src/app.ts)
 
 - `GET /` - Health check
 - `GET /api/auth/*` - BetterAuth endpoints (session, OAuth, etc.)
@@ -338,7 +338,7 @@ Then run the migration commands above.
 ### Adding New Routes
 
 ```typescript
-// gg-server/src/app.ts
+// tt-server/src/app.ts
 app.get('/posts', async (c) => {
   const prisma = getPrisma(c.env.DB);
   const posts = await prisma.post.findMany();
@@ -353,7 +353,7 @@ app.get('/posts', async (c) => {
 Use the `_authenticated` layout for protected routes:
 
 ```tsx
-// gg-client/src/routes/_authenticated/profile.tsx
+// tt-client/src/routes/_authenticated/profile.tsx
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authenticated/profile")({
@@ -388,8 +388,8 @@ CI/CD workflows are pre-configured in `.github/workflows/`:
 
 ```bash
 # Deploy everything
-pnpm --filter gg-server exec wrangler deploy
-pnpm --filter gg-client run build && pnpm --filter gg-client exec wrangler deploy
+pnpm --filter tt-server exec wrangler deploy
+pnpm --filter tt-client run build && pnpm --filter tt-client exec wrangler deploy
 ```
 
 ---
@@ -425,11 +425,11 @@ pnpm --filter gg-client run build && pnpm --filter gg-client exec wrangler deplo
 **Auth not working?**
 - Check `BETTER_AUTH_SECRET` is set in `.dev.vars` and production secrets
 - Verify OAuth credentials are correct
-- Check `trustedOrigins` in `gg-server/src/lib/auth.ts` includes your domains
+- Check `trustedOrigins` in `tt-server/src/lib/auth.ts` includes your domains
 
 **Database errors?**
-- Run `pnpm --filter gg-server run db:generate` after schema changes
-- Apply migrations: `pnpm --filter gg-server run db:migrate:local`
+- Run `pnpm --filter tt-server run db:generate` after schema changes
+- Apply migrations: `pnpm --filter tt-server run db:migrate:local`
 
 **Build errors?**
 - Run `pnpm install` from workspace root
@@ -437,7 +437,7 @@ pnpm --filter gg-client run build && pnpm --filter gg-client exec wrangler deplo
 
 **Service binding not working?**
 - Verify worker names match in both `wrangler.jsonc` files
-- Check `gg-client/wrangler.jsonc` service binding points to server name
+- Check `tt-client/wrangler.jsonc` service binding points to server name
 
 ---
 
