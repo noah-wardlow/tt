@@ -1,9 +1,11 @@
 import { createContext, useContext, type ReactNode } from "react";
-import { Loader2 } from "lucide-react";
-import { useSession } from "./auth";
+import { useQuery } from "@tanstack/react-query";
+import { sessionQueryOptions } from "./auth";
+
+type Session = Awaited<ReturnType<typeof sessionQueryOptions.queryFn>>;
 
 interface AuthContextType {
-  session: ReturnType<typeof useSession>["data"];
+  session: Session | null;
   isPending: boolean;
   isAuthenticated: boolean;
 }
@@ -11,23 +13,15 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | null>(null);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const { data: session, isPending } = useSession();
+  // Uses TanStack Query - data is prefetched in __root.tsx beforeLoad
+  // so there's no loading flash on initial render
+  const { data: session, isPending } = useQuery(sessionQueryOptions);
 
   const value: AuthContextType = {
     session: session ?? null,
-    isPending: isPending,
+    isPending,
     isAuthenticated: !!session,
   };
-
-  // Show loading state while initial session is being fetched
-  // This prevents the router from redirecting before we know auth status
-  if (isPending) {
-    return (
-      <div className="flex items-center justify-center min-h-screen">
-        <Loader2 className="size-12 animate-spin mx-auto" />
-      </div>
-    );
-  }
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
 }

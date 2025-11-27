@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { useQueryClient } from "@tanstack/react-query";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -8,7 +9,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { signOut } from "@/lib/auth";
+import { signOut, sessionQueryOptions } from "@/lib/auth";
 import { Settings, LogOut } from "lucide-react";
 
 export function getInitials(name?: string): string {
@@ -30,8 +31,11 @@ interface ProfileDropdownProps {
 }
 
 export function ProfileDropdown({ user }: ProfileDropdownProps) {
+  const queryClient = useQueryClient();
+
   const handleSignOut = async () => {
     await signOut();
+    queryClient.setQueryData(sessionQueryOptions.queryKey, null);
   };
 
   return (

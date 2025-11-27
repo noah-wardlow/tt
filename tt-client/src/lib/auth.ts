@@ -31,3 +31,13 @@ export const authClient = createAuthClient({
 });
 
 export const { signIn, signOut, useSession } = authClient;
+
+// Query options for prefetching session in router beforeLoad
+export const sessionQueryOptions = {
+  queryKey: ["session"],
+  queryFn: async () => {
+    const result = await authClient.getSession();
+    return result.data;
+  },
+  staleTime: 1000 * 60 * 5, // 5 minutes
+};
