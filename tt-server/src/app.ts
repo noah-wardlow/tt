@@ -46,7 +46,9 @@ app.use(
         : "https://tt-client.nmwardlow.workers.dev";
     },
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Authorization", "Content-Type"],
+    allowHeaders: ["Content-Type", "Authorization"],
+    exposeHeaders: ["Content-Length"],
+    maxAge: 600,
     credentials: true,
   }),
 );
