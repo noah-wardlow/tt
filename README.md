@@ -122,6 +122,34 @@ pnpm exec wrangler secret put GOOGLE_CLIENT_SECRET
 - Get credentials from each provider's developer console
 - Add `{PROVIDER}_CLIENT_ID` and `{PROVIDER}_CLIENT_SECRET` to `.dev.vars` and production secrets
 
+#### Google OAuth Setup
+
+1. Go to [Google Cloud Console](https://console.cloud.google.com/)
+2. Create a new project or select an existing one
+3. Navigate to **APIs & Services** → **Credentials**
+4. Click **Create Credentials** → **OAuth client ID**
+5. Select **Web application** as the application type
+6. Configure the following:
+
+   **Authorized JavaScript origins:**
+   ```
+   http://localhost
+   https://my-project-client.YOUR_SUBDOMAIN.workers.dev
+   ```
+
+   **Authorized redirect URIs:**
+   ```
+   http://localhost
+   http://localhost:8787/auth/callback/google
+   ```
+
+7. Click **Create** and copy your **Client ID** and **Client Secret**
+8. Add them to `my-project-server/.dev.vars`:
+   ```
+   GOOGLE_CLIENT_ID="your-client-id"
+   GOOGLE_CLIENT_SECRET="your-client-secret"
+   ```
+
 ### 6. Local Development
 
 **Terminal 1 - Server:**
