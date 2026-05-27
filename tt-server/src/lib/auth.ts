@@ -18,8 +18,12 @@ type AuthEnv = {
   TWITCH_CLIENT_ID?: string;
   TWITCH_CLIENT_SECRET?: string;
   BETTER_AUTH_SECRET?: string;
+  BETTER_AUTH_URL?: string;
+  BETTER_AUTH_COOKIE_DOMAIN?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
+  STRIPE_PRO_MONTHLY_PRICE_ID?: string;
+  STRIPE_PRO_YEARLY_PRICE_ID?: string;
 };
 
 // Cache auth instance per DB to avoid recreating on every request
@@ -51,15 +55,46 @@ export function getAuth(db: D1Database, env: AuthEnv) {
   // Create Stripe client if configured
   const stripeClient = env.STRIPE_SECRET_KEY
     ? new Stripe(env.STRIPE_SECRET_KEY, {
-        apiVersion: "2025-02-24.acacia",
+        apiVersion: "2025-10-29.clover",
       })
     : undefined;
+
+  const baseURL =
+    env.BETTER_AUTH_URL || "https://tt-server.nmwardlow.workers.dev";
+  const subscriptionPlans: Array<{
+    name: string;
+    priceId: string;
+    limits: {
+      projects: number;
+    };
+  }> = [];
+
+  if (env.STRIPE_PRO_MONTHLY_PRICE_ID) {
+    subscriptionPlans.push({
+      name: "pro-monthly",
+      priceId: env.STRIPE_PRO_MONTHLY_PRICE_ID,
+      limits: {
+        projects: 10,
+      },
+    });
+  }
+
+  if (env.STRIPE_PRO_YEARLY_PRICE_ID) {
+    subscriptionPlans.push({
+      name: "pro-yearly",
+      priceId: env.STRIPE_PRO_YEARLY_PRICE_ID,
+      limits: {
+        projects: 10,
+      },
+    });
+  }
 
   const auth = betterAuth({
     database: {
       db: kysely,
       type: "sqlite",
     },
+    baseURL,
     basePath: "/auth",
     secret: env.BETTER_AUTH_SECRET || "default-secret-change-me",
     emailAndPassword: {
@@ -80,9 +115,24 @@ export function getAuth(db: D1Database, env: AuthEnv) {
         updateUserInfoOnLink: true,
       },
     },
+    ...(env.BETTER_AUTH_COOKIE_DOMAIN
+      ? {
+          advanced: {
+            crossSubDomainCookies: {
+              enabled: true,
+              domain: env.BETTER_AUTH_COOKIE_DOMAIN,
+            },
+          },
+        }
+      : {}),
     socialProviders,
     trustedOrigins: [
       "http://localhost:3000",
+      "http://localhost:3001",
+      "http://localhost:3002",
+      "http://localhost:3003",
+      "http://localhost:3004",
+      "http://localhost:3005",
       "http://localhost:8787",
       "https://tt-client.nmwardlow.workers.dev",
       "https://tt-server.nmwardlow.workers.dev",
@@ -94,6 +144,14 @@ export function getAuth(db: D1Database, env: AuthEnv) {
               stripeClient,
               stripeWebhookSecret: env.STRIPE_WEBHOOK_SECRET,
               createCustomerOnSignUp: true,
+              ...(subscriptionPlans.length > 0
+                ? {
+                    subscription: {
+                      enabled: true,
+                      plans: subscriptionPlans,
+                    },
+                  }
+                : {}),
             }),
           ]
         : []),

@@ -25,6 +25,10 @@ STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...           # For standard subscriptions
 STRIPE_CONNECT_WEBHOOK_SECRET=whsec_...   # For Stripe Connect (if using)
 
+# Subscription price IDs
+STRIPE_PRO_MONTHLY_PRICE_ID=price_...
+STRIPE_PRO_YEARLY_PRICE_ID=price_...
+
 # Auth Secret
 BETTER_AUTH_SECRET=your-secret-here
 
@@ -46,6 +50,8 @@ cd tt-server
 wrangler secret put STRIPE_SECRET_KEY
 wrangler secret put STRIPE_WEBHOOK_SECRET
 wrangler secret put BETTER_AUTH_SECRET
+wrangler secret put STRIPE_PRO_MONTHLY_PRICE_ID
+wrangler secret put STRIPE_PRO_YEARLY_PRICE_ID
 
 # Optional (Stripe Connect)
 wrangler secret put STRIPE_CONNECT_WEBHOOK_SECRET
@@ -237,7 +243,7 @@ import Stripe from "stripe";
 
 const stripeClient = env.STRIPE_SECRET_KEY
   ? new Stripe(env.STRIPE_SECRET_KEY, {
-      apiVersion: "2025-02-24.acacia",
+      apiVersion: "2025-10-29.clover",
     })
   : undefined;
 
@@ -255,22 +261,17 @@ export const auth = betterAuth({
               enabled: true,
               plans: [
                 {
-                  name: "basic",
-                  priceId: "price_1234567890",
+                  name: "pro-monthly",
+                  priceId: env.STRIPE_PRO_MONTHLY_PRICE_ID,
                   limits: {
-                    projects: 5,
-                    storage: 10,
+                    projects: 10,
                   },
                 },
                 {
-                  name: "pro",
-                  priceId: "price_0987654321",
+                  name: "pro-yearly",
+                  priceId: env.STRIPE_PRO_YEARLY_PRICE_ID,
                   limits: {
-                    projects: 20,
-                    storage: 50,
-                  },
-                  freeTrial: {
-                    days: 14,
+                    projects: 10,
                   },
                 },
               ],
@@ -456,7 +457,7 @@ If migrating from custom Stripe setup to Better Auth:
 - [x] Run database migrations (`0006` and `0008`)
 - [x] Generate Prisma client (`pnpm --filter tt-server run db:generate`)
 - [x] Update Stripe webhook URLs in dashboard
-- [ ] Update `.dev.vars` with new variable names
+- [ ] Update `.dev.vars` with new variable names and subscription price IDs
 - [ ] Update production secrets with `wrangler secret put`
 - [ ] Deploy and test webhooks
 - [ ] Monitor Stripe Dashboard webhook logs

@@ -17,10 +17,14 @@ type Bindings = {
   DISCORD_CLIENT_SECRET?: string;
   TWITCH_CLIENT_ID?: string;
   TWITCH_CLIENT_SECRET?: string;
+  BETTER_AUTH_URL?: string;
+  BETTER_AUTH_COOKIE_DOMAIN?: string;
   BETTER_AUTH_SECRET?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
   STRIPE_CONNECT_WEBHOOK_SECRET?: string;
+  STRIPE_PRO_MONTHLY_PRICE_ID?: string;
+  STRIPE_PRO_YEARLY_PRICE_ID?: string;
 };
 
 declare global {
@@ -29,24 +33,52 @@ declare global {
 
 const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
-// Enable CORS for development only
-// In production, service bindings don't need CORS (Worker-to-Worker communication)
-// In development, client (localhost:3000) and server (localhost:8787) are different origins
+const allowedOrigins = [
+  "http://localhost:3000",
+  "http://localhost:3001",
+  "http://localhost:3002",
+  "http://localhost:3003",
+  "http://localhost:3004",
+  "http://localhost:3005",
+  "http://localhost:8787",
+  "https://tt-client.nmwardlow.workers.dev",
+  "https://tt-server.nmwardlow.workers.dev",
+];
+
+// Handle browser preflights before auth/session middleware. This keeps local dev
+// ports and deployed origins from inheriting a stale default CORS origin.
+app.use("*", async (c, next) => {
+  if (c.req.method === "OPTIONS") {
+    const origin = c.req.header("Origin") || "";
+    const allowOrigin = allowedOrigins.includes(origin)
+      ? origin
+      : "https://tt-client.nmwardlow.workers.dev";
+
+    return new Response(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": allowOrigin,
+        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization, User-Agent",
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Max-Age": "600",
+      },
+    });
+  }
+
+  await next();
+});
+
 app.use(
   "*",
   cors({
     origin: (origin) => {
-      const allowedOrigins = [
-        "http://localhost:3000",
-        "http://localhost:8787",
-        "https://tt-client.nmwardlow.workers.dev",
-      ];
       return allowedOrigins.includes(origin)
         ? origin
         : "https://tt-client.nmwardlow.workers.dev";
     },
     allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization"],
+    allowHeaders: ["Content-Type", "Authorization", "User-Agent"],
     exposeHeaders: ["Content-Length"],
     maxAge: 600,
     credentials: true,

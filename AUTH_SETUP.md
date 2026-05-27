@@ -37,6 +37,7 @@ GOOGLE_CLIENT_SECRET=your-google-client-secret
 DISCORD_CLIENT_ID=your-discord-client-id
 DISCORD_CLIENT_SECRET=your-discord-client-secret
 BETTER_AUTH_SECRET=$(openssl rand -base64 32)
+BETTER_AUTH_URL=http://localhost:8787
 ```
 
 Generate a secure secret:
@@ -54,7 +55,12 @@ wrangler secret put GOOGLE_CLIENT_SECRET
 wrangler secret put DISCORD_CLIENT_ID
 wrangler secret put DISCORD_CLIENT_SECRET
 wrangler secret put BETTER_AUTH_SECRET
+wrangler secret put BETTER_AUTH_URL
 ```
+
+For custom domains that need auth cookies shared across subdomains, also set
+`BETTER_AUTH_COOKIE_DOMAIN` to the parent domain, for example
+`.example.com`.
 
 ### 3. Generate Schema & Run Migrations
 
@@ -156,7 +162,7 @@ Auth endpoints are served by the server Worker at `/auth/*`:
 
 ## Troubleshooting
 
-1. **CORS errors**: Make sure both servers are running and CORS is configured correctly
+1. **CORS errors**: Make sure both servers are running and the request origin is listed in `tt-server/src/app.ts` and `tt-server/src/lib/auth.ts`
 2. **OAuth redirect errors**: Verify redirect URIs match exactly in OAuth provider settings
 3. **Database errors**: Run migrations with `pnpm db:migrate:local`
 4. **Environment variables not loading**: Check `.dev.vars` file exists and is properly formatted
