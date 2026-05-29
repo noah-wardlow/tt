@@ -1,0 +1,11 @@
+{
+  "name": "tt",
+  "private": true,
+  "packageManager": "pnpm@10.30.0",
+  "scripts": {
+    "build": "pnpm --filter tt-client run build",
+    "test": "pnpm --filter tt-server test && pnpm --filter tt-client test",
+    "typecheck": "pnpm --filter tt-server run typecheck && pnpm --filter tt-client run typecheck",
+    "verify": "pnpm run typecheck && pnpm run test && pnpm run build"
+  }
+}
