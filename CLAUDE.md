@@ -201,7 +201,8 @@ When creating a new project from this template:
 
 ### CORS
 
-- **Development**: CORS enabled in `tt-server/src/app.ts` for `http://localhost:3000`
+- **Development**: localhost dev origins are accepted automatically by `tt-server/src/lib/origins.ts`
+- **Custom domains/previews**: set `APP_ORIGIN` or `ADDITIONAL_ALLOWED_ORIGINS`
 - **Production**: No CORS needed (service binding communication)
 - **Trusted origins**: Configured in `tt-server/src/lib/auth.ts` for BetterAuth
 

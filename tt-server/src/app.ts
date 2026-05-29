@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { cors } from "hono/cors";
 import { getPrisma } from "./lib/prisma";
 import { getAuth } from "./lib/auth";
+import { resolveCorsOrigin } from "./lib/origins";
 import stripeConnectWebhook from "./routes/stripe-connect-webhook";
 import {
   createAuthContextMiddleware,
@@ -19,6 +19,8 @@ type Bindings = {
   TWITCH_CLIENT_SECRET?: string;
   BETTER_AUTH_URL?: string;
   BETTER_AUTH_COOKIE_DOMAIN?: string;
+  APP_ORIGIN?: string;
+  ADDITIONAL_ALLOWED_ORIGINS?: string;
   BETTER_AUTH_SECRET?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
@@ -33,57 +35,32 @@ declare global {
 
 const app = new Hono<{ Bindings: Bindings; Variables: AppVariables }>();
 
-const allowedOrigins = [
-  "http://localhost:3000",
-  "http://localhost:3001",
-  "http://localhost:3002",
-  "http://localhost:3003",
-  "http://localhost:3004",
-  "http://localhost:3005",
-  "http://localhost:8787",
-  "https://tt-client.nmwardlow.workers.dev",
-  "https://tt-server.nmwardlow.workers.dev",
-];
-
 // Handle browser preflights before auth/session middleware. This keeps local dev
 // ports and deployed origins from inheriting a stale default CORS origin.
 app.use("*", async (c, next) => {
-  if (c.req.method === "OPTIONS") {
-    const origin = c.req.header("Origin") || "";
-    const allowOrigin = allowedOrigins.includes(origin)
-      ? origin
-      : "https://tt-client.nmwardlow.workers.dev";
+  const allowOrigin = resolveCorsOrigin(c.req.header("Origin"), c.env);
+  const corsHeaders = {
+    "Access-Control-Allow-Origin": allowOrigin,
+    "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
+    "Access-Control-Allow-Headers": "Content-Type, Authorization, User-Agent",
+    "Access-Control-Allow-Credentials": "true",
+    "Access-Control-Max-Age": "600",
+    Vary: "Origin",
+  };
 
+  if (c.req.method === "OPTIONS") {
     return new Response(null, {
       status: 204,
-      headers: {
-        "Access-Control-Allow-Origin": allowOrigin,
-        "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, OPTIONS",
-        "Access-Control-Allow-Headers": "Content-Type, Authorization, User-Agent",
-        "Access-Control-Allow-Credentials": "true",
-        "Access-Control-Max-Age": "600",
-      },
+      headers: corsHeaders,
     });
   }
 
   await next();
+  for (const [key, value] of Object.entries(corsHeaders)) {
+    c.res.headers.set(key, value);
+  }
+  c.res.headers.set("Access-Control-Expose-Headers", "Content-Length");
 });
-
-app.use(
-  "*",
-  cors({
-    origin: (origin) => {
-      return allowedOrigins.includes(origin)
-        ? origin
-        : "https://tt-client.nmwardlow.workers.dev";
-    },
-    allowMethods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowHeaders: ["Content-Type", "Authorization", "User-Agent"],
-    exposeHeaders: ["Content-Length"],
-    maxAge: 600,
-    credentials: true,
-  }),
-);
 
 // Health check
 app.get("/", (c) => c.json({ ok: true }));

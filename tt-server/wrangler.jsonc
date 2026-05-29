@@ -1,7 +1,7 @@
 {
 	"$schema": "node_modules/wrangler/config-schema.json",
 	"name": "tt-server",
-	"compatibility_date": "2025-08-03",
+	"compatibility_date": "2026-05-27",
 	"compatibility_flags": ["nodejs_compat"],
 	"main": "./src/index.ts",
 	"d1_databases": [
@@ -11,7 +11,14 @@
 			"database_id": "51a434c1-0270-49ba-a47e-81dca87b5756"
 		}
 	],
+	"observability": {
+		"enabled": true,
+		"head_sampling_rate": 1
+	},
 	// For local development, create a .dev.vars file with your secrets
 	// For production, use: wrangler secret put VARIABLE_NAME
-	"vars": {}
+	"vars": {
+		"BETTER_AUTH_URL": "https://tt-server.nmwardlow.workers.dev",
+		"APP_ORIGIN": "https://tt-client.nmwardlow.workers.dev"
+	}
 }

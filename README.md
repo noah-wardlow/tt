@@ -87,6 +87,8 @@ node -e "console.log(require('crypto').randomBytes(32).toString('base64'))"
 Create `my-project-server/.dev.vars`:
 ```bash
 BETTER_AUTH_SECRET="<generated-secret>"
+BETTER_AUTH_URL="http://localhost:8787"
+APP_ORIGIN="http://localhost:3000"
 
 # Add OAuth provider credentials (based on enabled providers in my-project-shared/src/oauth-config.ts)
 # Format: {PROVIDER}_CLIENT_ID and {PROVIDER}_CLIENT_SECRET
@@ -98,6 +100,10 @@ STRIPE_SECRET_KEY="sk_test_..."
 STRIPE_WEBHOOK_SECRET="whsec_..."
 STRIPE_CONNECT_WEBHOOK_SECRET="whsec_..."
 ```
+
+Use `ADDITIONAL_ALLOWED_ORIGINS` for preview or custom domains that should be
+accepted by both CORS and Better Auth, for example:
+`ADDITIONAL_ALLOWED_ORIGINS="https://preview.example.com,https://www.example.com"`.
 
 **For production:**
 
@@ -450,7 +456,7 @@ pnpm --filter tt-client run build && pnpm --filter tt-client exec wrangler deplo
 - Ensure `nodejs_compat` flag is in `tt-server/wrangler.jsonc` (required for BetterAuth)
 - Check `BETTER_AUTH_SECRET` is set in `.dev.vars` and production secrets
 - Verify OAuth credentials are correct
-- Check `trustedOrigins` in `tt-server/src/lib/auth.ts` includes your domains
+- Set `APP_ORIGIN` or `ADDITIONAL_ALLOWED_ORIGINS` for custom domains and preview URLs
 
 **Database errors?**
 - Run `pnpm --filter tt-server run db:generate` after schema changes

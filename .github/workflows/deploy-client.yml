@@ -15,9 +15,6 @@ concurrency:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: tt-client
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,24 +22,35 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Enable Corepack (pnpm)
         run: corepack enable
 
       - name: Install dependencies
-        working-directory: .
         run: pnpm install --frozen-lockfile --filter tt-client --filter tt-shared --filter tt-server
 
       - name: Generate Prisma Client
         working-directory: tt-server
         run: pnpm run db:generate
 
+      - name: Typecheck client
+        run: pnpm --filter tt-client run typecheck
+
+      - name: Test client
+        run: pnpm --filter tt-client run test
+
       - name: Build client (Vite)
-        run: pnpm run build
+        run: pnpm --filter tt-client run build
+
+      - name: Wrangler deploy dry run
+        run: pnpm --filter tt-client exec wrangler deploy --dry-run
+        env:
+          CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
 
       - name: Deploy with Wrangler
-        run: pnpm exec wrangler deploy
+        run: pnpm --filter tt-client exec wrangler deploy
         env:
           CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}

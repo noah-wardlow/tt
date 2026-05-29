@@ -1,6 +1,6 @@
 {
   "name": "tt-client",
-  "compatibility_date": "2025-04-03",
+  "compatibility_date": "2026-05-27",
   // Use Workers Assets for SPA static files (wrangler serves Vite build)
   "assets": {
     // REQUIRED: directory with built static assets from Vite
@@ -17,5 +17,9 @@
       "binding": "TT_SERVER",
       "service": "tt-server"
     }
-  ]
+  ],
+  "observability": {
+    "enabled": true,
+    "head_sampling_rate": 1
+  }
 }

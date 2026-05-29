@@ -162,7 +162,7 @@ Auth endpoints are served by the server Worker at `/auth/*`:
 
 ## Troubleshooting
 
-1. **CORS errors**: Make sure both servers are running and the request origin is listed in `tt-server/src/app.ts` and `tt-server/src/lib/auth.ts`
+1. **CORS errors**: Make sure both servers are running. Localhost dev ports are accepted automatically; set `APP_ORIGIN` or `ADDITIONAL_ALLOWED_ORIGINS` for custom domains and preview URLs.
 2. **OAuth redirect errors**: Verify redirect URIs match exactly in OAuth provider settings
 3. **Database errors**: Run migrations with `pnpm db:migrate:local`
 4. **Environment variables not loading**: Check `.dev.vars` file exists and is properly formatted

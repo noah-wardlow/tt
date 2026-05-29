@@ -21,18 +21,23 @@ import { useState } from "react";
 
 interface LoginSearch {
   redirect?: string;
+  error?: string;
 }
 
 export const Route = createFileRoute("/login")({
   validateSearch: (search: Record<string, unknown>): LoginSearch => {
     return {
       redirect: search.redirect as string | undefined,
+      error: search.error as string | undefined,
     };
   },
   beforeLoad: ({ context, search }) => {
-    // If user is already authenticated, redirect to home or the intended page
+    if (context.auth.isPending) {
+      return;
+    }
+
     if (context.auth.isAuthenticated) {
-      throw redirect({ to: search.redirect || "/" });
+      throw redirect({ to: frontendRedirectPath(search.redirect) });
     }
   },
   component: Login,
@@ -48,12 +53,12 @@ function Login() {
   const handleOAuthLogin = async (provider: OAuthProviderName) => {
     try {
       setLoadingProvider(provider);
-      const callbackURL = search.redirect
-        ? `${window.location.origin}${search.redirect}`
-        : window.location.origin;
+      const callbackURL = frontendCallbackUrl(search.redirect);
+      const errorCallbackURL = `${window.location.origin}/login`;
       await signIn.social({
         provider,
         callbackURL,
+        errorCallbackURL,
       });
     } catch (error) {
       console.error("OAuth login failed:", error);
@@ -77,6 +82,11 @@ function Login() {
           <CardDescription>Sign in to your account to continue</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {search.error ? (
+            <div className="rounded-md border border-destructive/50 p-3 text-sm text-destructive">
+              Sign-in could not finish. Try again from this page.
+            </div>
+          ) : null}
           {enabledProviders.map((provider, index) => {
             const config = oauthConfig[provider];
             const Icon = oauthIcons[provider];
@@ -115,4 +125,33 @@ function Login() {
       </Card>
     </div>
   );
+}
+
+function frontendCallbackUrl(redirect?: string) {
+  const fallback = new URL("/", window.location.origin);
+  if (!redirect) return fallback.toString();
+
+  try {
+    const url = new URL(redirect, window.location.origin);
+    if (url.origin !== window.location.origin) {
+      return fallback.toString();
+    }
+    return url.toString();
+  } catch {
+    return fallback.toString();
+  }
+}
+
+function frontendRedirectPath(redirect?: string) {
+  if (!redirect) return "/";
+
+  try {
+    const url = new URL(redirect, "http://app.local");
+    if (url.origin !== "http://app.local") {
+      return "/";
+    }
+    return `${url.pathname}${url.search}${url.hash}` || "/";
+  } catch {
+    return "/";
+  }
 }

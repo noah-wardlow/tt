@@ -19,7 +19,9 @@ CLIENT_NAME="${PROJECT_NAME}-client"
 SERVER_NAME="${PROJECT_NAME}-server"
 SHARED_NAME="${PROJECT_NAME}-shared"
 # Convert to uppercase for binding name (e.g., MY_PROJECT_SERVER)
-BINDING_NAME="${PROJECT_NAME^^}_SERVER"
+BINDING_PREFIX=$(echo "$PROJECT_NAME" | tr '[:lower:]' '[:upper:]' | sed 's/[^A-Z0-9]/_/g')
+BINDING_NAME="${BINDING_PREFIX}_SERVER"
+PROJECT_TITLE=$(printf '%s' "$PROJECT_NAME" | awk '{print toupper(substr($0,1,1)) substr($0,2)}')
 
 echo "Renaming TT template to: $PROJECT_NAME"
 echo ""
@@ -88,106 +90,43 @@ rm "$CLIENT_NAME/wrangler.jsonc.bak"
 echo "Done: wrangler.jsonc files updated"
 
 echo ""
-echo "Step 5: Updating source code imports..."
+echo "Step 5: Updating template references across source, config, docs, and workflows..."
 
-# Update client worker.ts binding name
-sed -i.bak "s/TT_SERVER/$BINDING_NAME/g" "$CLIENT_NAME/src/worker.ts"
-sed -i.bak "s/tt-server/$SERVER_NAME/g" "$CLIENT_NAME/src/worker.ts"
-rm "$CLIENT_NAME/src/worker.ts.bak"
-
-# Update all source files that import from tt-shared
-find "$CLIENT_NAME/src" -name "*.ts" -o -name "*.tsx" | while read file; do
-  if grep -q "tt-shared" "$file" 2>/dev/null; then
+find . -type f \
+  ! -path "./.git/*" \
+  ! -path "./node_modules/*" \
+  ! -path "./*/node_modules/*" \
+  ! -path "./dist/*" \
+  ! -path "./*/dist/*" \
+  ! -path "./.wrangler/*" \
+  ! -path "./*/.wrangler/*" \
+  ! -path "./rename-project.sh" \
+  \( \
+    -name "*.ts" -o \
+    -name "*.tsx" -o \
+    -name "*.js" -o \
+    -name "*.jsx" -o \
+    -name "*.json" -o \
+    -name "*.jsonc" -o \
+    -name "*.yaml" -o \
+    -name "*.yml" -o \
+    -name "*.md" -o \
+    -name "*.html" -o \
+    -name "*.css" -o \
+    -name "*.env" -o \
+    -name ".env*" -o \
+    -name "pnpm-lock.yaml" \
+  \) -print0 | while IFS= read -r -d '' file; do
+    sed -i.bak "s/tt-client/$CLIENT_NAME/g" "$file"
+    sed -i.bak "s/tt-server/$SERVER_NAME/g" "$file"
     sed -i.bak "s/tt-shared/$SHARED_NAME/g" "$file"
+    sed -i.bak "s/tt-database/${PROJECT_NAME}-database/g" "$file"
+    sed -i.bak "s/TT_SERVER/$BINDING_NAME/g" "$file"
+    sed -i.bak "s/TT Template/${PROJECT_TITLE} Template/g" "$file"
     rm "${file}.bak"
-  fi
-done
+  done
 
-# Update client index.html title
-if [ -f "$CLIENT_NAME/index.html" ]; then
-  sed -i.bak "s/tt-client/$CLIENT_NAME/g" "$CLIENT_NAME/index.html"
-  rm "$CLIENT_NAME/index.html.bak"
-fi
-
-# Update client .env.production URLs
-if [ -f "$CLIENT_NAME/.env.production" ]; then
-  sed -i.bak "s/tt-server/$SERVER_NAME/g" "$CLIENT_NAME/.env.production"
-  sed -i.bak "s/tt-client/$CLIENT_NAME/g" "$CLIENT_NAME/.env.production"
-  rm "$CLIENT_NAME/.env.production.bak"
-fi
-
-find "$SERVER_NAME/src" -name "*.ts" | while read file; do
-  if grep -q "tt-shared" "$file" 2>/dev/null; then
-    sed -i.bak "s/tt-shared/$SHARED_NAME/g" "$file"
-    rm "${file}.bak"
-  fi
-done
-
-echo "Done: Source imports updated"
-
-echo ""
-echo "Step 6: Updating documentation files..."
-
-# Update README.md
-sed -i.bak "s/tt-client/$CLIENT_NAME/g" README.md
-sed -i.bak "s/tt-server/$SERVER_NAME/g" README.md
-sed -i.bak "s/tt-shared/$SHARED_NAME/g" README.md
-rm README.md.bak
-
-# Update CLAUDE.md
-sed -i.bak "s/tt-client/$CLIENT_NAME/g" CLAUDE.md
-sed -i.bak "s/tt-server/$SERVER_NAME/g" CLAUDE.md
-sed -i.bak "s/tt-shared/$SHARED_NAME/g" CLAUDE.md
-sed -i.bak "s/TT_SERVER/$BINDING_NAME/g" CLAUDE.md
-sed -i.bak "s/TT Template/${PROJECT_NAME^} Template/g" CLAUDE.md
-rm CLAUDE.md.bak
-
-# Update AGENTS.md if it exists
-if [ -f "AGENTS.md" ]; then
-  sed -i.bak "s/tt-client/$CLIENT_NAME/g" AGENTS.md
-  sed -i.bak "s/tt-server/$SERVER_NAME/g" AGENTS.md
-  sed -i.bak "s/tt-shared/$SHARED_NAME/g" AGENTS.md
-  sed -i.bak "s/TT_SERVER/$BINDING_NAME/g" AGENTS.md
-  rm AGENTS.md.bak
-fi
-
-# Update STRIPE_SETUP.md if it exists
-if [ -f "STRIPE_SETUP.md" ]; then
-  sed -i.bak "s/tt-client/$CLIENT_NAME/g" STRIPE_SETUP.md
-  sed -i.bak "s/tt-server/$SERVER_NAME/g" STRIPE_SETUP.md
-  sed -i.bak "s/tt-database/${PROJECT_NAME}-database/g" STRIPE_SETUP.md
-  rm STRIPE_SETUP.md.bak
-fi
-
-# Update AUTH_SETUP.md if it exists
-if [ -f "AUTH_SETUP.md" ]; then
-  sed -i.bak "s/tt-client/$CLIENT_NAME/g" AUTH_SETUP.md
-  sed -i.bak "s/tt-server/$SERVER_NAME/g" AUTH_SETUP.md
-  rm AUTH_SETUP.md.bak
-fi
-
-# Update shared README.md if it exists
-if [ -f "$SHARED_NAME/README.md" ]; then
-  sed -i.bak "s/tt-shared/$SHARED_NAME/g" "$SHARED_NAME/README.md"
-  sed -i.bak "s/tt-server/$SERVER_NAME/g" "$SHARED_NAME/README.md"
-  rm "$SHARED_NAME/README.md.bak"
-fi
-
-echo "Done: Documentation updated"
-
-echo ""
-echo "Step 7: Updating GitHub workflows..."
-
-if [ -d ".github/workflows" ]; then
-  sed -i.bak "s/tt-server/$SERVER_NAME/g" .github/workflows/deploy-server.yml
-  sed -i.bak "s/tt-shared/$SHARED_NAME/g" .github/workflows/deploy-server.yml
-  sed -i.bak "s/tt-client/$CLIENT_NAME/g" .github/workflows/deploy-client.yml
-  sed -i.bak "s/tt-shared/$SHARED_NAME/g" .github/workflows/deploy-client.yml
-  rm .github/workflows/*.bak 2>/dev/null || true
-  echo "Done: GitHub workflows updated"
-else
-  echo "Skipped: No .github/workflows directory found"
-fi
+echo "Done: Template references updated"
 
 echo ""
 echo "========================================"

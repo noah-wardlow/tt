@@ -7,6 +7,7 @@ import {
   getClientSecretEnvVar,
   profileMappers,
 } from "./oauth-utils";
+import { getAllowedOrigins } from "./origins";
 import { stripe } from "@better-auth/stripe";
 import Stripe from "stripe";
 
@@ -20,11 +21,35 @@ type AuthEnv = {
   BETTER_AUTH_SECRET?: string;
   BETTER_AUTH_URL?: string;
   BETTER_AUTH_COOKIE_DOMAIN?: string;
+  APP_ORIGIN?: string;
+  ADDITIONAL_ALLOWED_ORIGINS?: string;
   STRIPE_SECRET_KEY?: string;
   STRIPE_WEBHOOK_SECRET?: string;
   STRIPE_PRO_MONTHLY_PRICE_ID?: string;
   STRIPE_PRO_YEARLY_PRICE_ID?: string;
 };
+
+function originFromUrl(value: string | undefined) {
+  if (!value) return null;
+  try {
+    return new URL(value).origin;
+  } catch {
+    return null;
+  }
+}
+
+function isLocalAuthUrl(value: string) {
+  try {
+    const { hostname } = new URL(value);
+    return (
+      hostname === "localhost" ||
+      hostname === "127.0.0.1" ||
+      hostname === "::1"
+    );
+  } catch {
+    return false;
+  }
+}
 
 // Cache auth instance per DB to avoid recreating on every request
 const authCache = new WeakMap();
@@ -55,12 +80,21 @@ export function getAuth(db: D1Database, env: AuthEnv) {
   // Create Stripe client if configured
   const stripeClient = env.STRIPE_SECRET_KEY
     ? new Stripe(env.STRIPE_SECRET_KEY, {
-        apiVersion: "2025-10-29.clover",
+        apiVersion: "2026-02-25.clover",
       })
     : undefined;
 
   const baseURL =
     env.BETTER_AUTH_URL || "https://tt-server.nmwardlow.workers.dev";
+  const appOrigin =
+    originFromUrl(env.APP_ORIGIN) ||
+    (originFromUrl(baseURL) === "http://localhost:8787"
+      ? "http://localhost:3000"
+      : originFromUrl(baseURL));
+  const cookieDomain =
+    env.BETTER_AUTH_COOKIE_DOMAIN && !isLocalAuthUrl(baseURL)
+      ? env.BETTER_AUTH_COOKIE_DOMAIN
+      : undefined;
   const subscriptionPlans: Array<{
     name: string;
     priceId: string;
@@ -115,28 +149,25 @@ export function getAuth(db: D1Database, env: AuthEnv) {
         updateUserInfoOnLink: true,
       },
     },
-    ...(env.BETTER_AUTH_COOKIE_DOMAIN
+    ...(appOrigin
+      ? {
+          onAPIError: {
+            errorURL: `${appOrigin}/login`,
+          },
+        }
+      : {}),
+    ...(cookieDomain
       ? {
           advanced: {
             crossSubDomainCookies: {
               enabled: true,
-              domain: env.BETTER_AUTH_COOKIE_DOMAIN,
+              domain: cookieDomain,
             },
           },
         }
       : {}),
     socialProviders,
-    trustedOrigins: [
-      "http://localhost:3000",
-      "http://localhost:3001",
-      "http://localhost:3002",
-      "http://localhost:3003",
-      "http://localhost:3004",
-      "http://localhost:3005",
-      "http://localhost:8787",
-      "https://tt-client.nmwardlow.workers.dev",
-      "https://tt-server.nmwardlow.workers.dev",
-    ],
+    trustedOrigins: getAllowedOrigins(env),
     plugins: [
       ...(stripeClient && env.STRIPE_WEBHOOK_SECRET
         ? [
