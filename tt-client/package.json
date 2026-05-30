@@ -4,7 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite --port 3000",
-    "build": "vite build && tsc",
+    "build": "rm -rf dist && VITE_API_BASE= VITE_AUTH_BASE= vite build && tsc",
     "serve": "vite preview",
     "test": "vitest run --passWithNoTests",
     "typecheck": "tsc --noEmit"

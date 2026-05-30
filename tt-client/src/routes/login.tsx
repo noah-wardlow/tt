@@ -1,4 +1,4 @@
-import { createFileRoute, redirect } from "@tanstack/react-router";
+import { createFileRoute, Link, redirect } from "@tanstack/react-router";
 import { signIn } from "@/lib/auth";
 import { useAuth } from "@/lib/auth-context";
 import {
@@ -75,10 +75,10 @@ function Login() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center gap-4 p-4">
       <Card className="w-full max-w-md">
         <CardHeader>
-          <CardTitle>Welcome Back</CardTitle>
+          <CardTitle>Login</CardTitle>
           <CardDescription>Sign in to your account to continue</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
@@ -123,6 +123,9 @@ function Login() {
           })}
         </CardContent>
       </Card>
+      <Button variant="link" asChild>
+        <Link to="/">Home</Link>
+      </Button>
     </div>
   );
 }

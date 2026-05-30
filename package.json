@@ -3,6 +3,7 @@
   "private": true,
   "packageManager": "pnpm@10.30.0",
   "scripts": {
+    "dev": "pnpm --parallel --stream --filter tt-server --filter tt-client run dev",
     "build": "pnpm --filter tt-client run build",
     "test": "pnpm --filter tt-server test && pnpm --filter tt-client test",
     "typecheck": "pnpm --filter tt-server run typecheck && pnpm --filter tt-client run typecheck",
